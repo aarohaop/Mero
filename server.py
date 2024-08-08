@@ -94,7 +94,7 @@ def start(update, context):
         [InlineKeyboardButton("Sign Up", url="https://ez4short.xyz/auth/signup")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Welcome to the bot! Please sign up first.", reply_markup=reply_markup)
+    update.message.reply_text("Lado Khau.", reply_markup=reply_markup)
 
 # Login command handler
 def api_Login(update, context):
