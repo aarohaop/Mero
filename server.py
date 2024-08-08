@@ -223,7 +223,7 @@ def main():
     disp.add_handler(telegram.ext.CommandHandler('get_api', get_api))
     disp.add_handler(telegram.ext.CommandHandler('logout', api_Logout))
     disp.add_handler(telegram.ext.CommandHandler('features', feature))
-    disp.add_handler(telegram.ext.CommandHandler('check_balance', balance))  # Add the balance command handler
+    disp.add_handler(telegram.ext.CommandHandler('check_balance', check_balance))  # Add the balance command handler
     disp.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.all, handle_message))
     updater.start_polling()
 
