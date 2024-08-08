@@ -6,7 +6,13 @@ import requests
 import string
 import random
 
-# Generate a random string for use in the bot
+# Text template for balance information
+BALANCE_TEXT = """User: {username}
+Publisher Earnings: {pbalance}
+Referral Earnings: {rbalance}
+Total Earnings: {tbalance}"""
+
+# Generate a random string
 def end_gen(length):
     letters = string.ascii_lowercase + string.digits + string.digits
     result_str = ''.join(random.choice(letters) for i in range(length))
@@ -14,8 +20,6 @@ def end_gen(length):
 
 # MongoDB connection URI
 uri = "mongodb+srv://aaroha:aaroha@cluster0.xfupmjy.mongodb.net/?retryWrites=true&w=majority"
-
-# Create a new client and connect to the server
 client = MongoClient(uri)
 db = client['TeleUsers']
 collection = db['TeleAuth']
@@ -63,23 +67,26 @@ def link_gen(uname, long_link):
         return "You haven't logged in yet. Please login first."
 
 # Check user's balance
-def check_balance(uname):
-    if is_auth(uname) is not None:
-        query = {"_id": uname}
-        res = collection.find_one(query)
-        api_key = res['api_key']
-        url = f"https://ez4short.xyz/api?api={api_key}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Accept": "application/json"
-        }
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json().get('balance', 'Balance information not available.')
-        else:
-            return "Failed to retrieve balance. Please try again later."
-    else:
-        return "You haven't logged in yet. Please login first."
+def shortner_balance(username, API, URL):
+    try:
+        response = requests.get(f'https://{URL}/api?api={API}')
+        resp = response.json()
+        
+        if resp['status'] == 1:
+            username = resp['username']
+            pbalance = resp['publisher_earnings']
+            rbalance = resp['referral_earnings']
+            tbalance = resp['total_earnings']
+            return BALANCE_TEXT.format(username=username, pbalance=pbalance, rbalance=rbalance, tbalance=tbalance)
+        
+        elif resp['status'] == 2:  
+            return "Your Account is Pending"
+        
+        elif resp['status'] == 3:
+            return "Your Account is Banned"
+        
+    except Exception as e:
+        return str(e)
 
 # Start command handler
 def start(update, context):
@@ -114,8 +121,18 @@ def api_Logout(update, context):
 def api_CheckBalance(update, context):
     user = update.message.from_user
     username = user.username
-    balance = check_balance(username)
-    update.message.reply_text(f"Your balance is: {balance}")
+    
+    # Fetch the user details from the database
+    user_data = is_auth(username)
+    
+    if user_data is not None:
+        API = user_data['api_key']
+        URL = "ez4short.xyz"  # Base URL
+        
+        balance_message = shortner_balance(username, API, URL)
+        update.message.reply_text(balance_message)
+    else:
+        update.message.reply_text("You haven't logged in yet. Please login first.")
 
 # Get API token instructions handler
 def get_api(update, context):
@@ -154,7 +171,7 @@ def feature(update, context):
 
 # Main function to run the bot
 def main():
-    bot = telegram.Bot("7163612647:AAFpZ3iSUfv8TZFpKd50-N5RRgN-2z7DWmM")
+    bot = telegram.Bot("YOUR_BOT_TOKEN")
     updater = telegram.ext.Updater(bot.token, use_context=True)
     disp = updater.dispatcher
     disp.add_handler(telegram.ext.CommandHandler('start', start))
