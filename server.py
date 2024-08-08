@@ -195,16 +195,22 @@ def api_Logout(update, context):
     else:
         update.message.reply_text("You haven't logged in yet. Please login first.")
 
-def balance(update, context):
-    user = update.message.from_user
-    username = user.username
-    auth = is_auth(username)
-    if auth:
-        api_key = auth['api_key']
-        balance_info = check_balance(api_key)
-        update.message.reply_text(f"Your balance information: {balance_info}")
-    else:
-        update.message.reply_text("You haven't logged in yet. Please login first.")
+def check_balance(api_key):
+    url = f"https://ez4short.xyz/api/balance?api={api_key}&format=json"  # Modify according to actual API documentation
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept": "application/json"
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        data = response.json()  # Assuming the API returns JSON
+        # You might need to adjust this based on the actual response structure
+        return f"Your current balance is: {data.get('balance', 'Not available')}"
+    except requests.RequestException as e:
+        return f"Failed to retrieve balance: {e}"
+    except ValueError:
+        return "Failed to parse balance response."
 
 # Main function to set up the bot
 def main():
