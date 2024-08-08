@@ -183,5 +183,8 @@ def main():
     disp.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.all, handle_message))
     updater.start_polling()
 
+# Start the bot with drop_pending_updates set to True
+    updater.start_polling(drop_pending_updates=True)
+
 if __name__ == "__main__":
     main()
