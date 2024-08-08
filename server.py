@@ -6,11 +6,13 @@ import requests
 import string
 import random
 
+# Generate a random string for use in the bot
 def end_gen(length):
     letters = string.ascii_lowercase + string.digits + string.digits
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
+# MongoDB connection URI
 uri = "mongodb+srv://aaroha:aaroha@cluster0.xfupmjy.mongodb.net/?retryWrites=true&w=majority"
 
 # Create a new client and connect to the server
@@ -18,12 +20,13 @@ client = MongoClient(uri)
 db = client['TeleUsers']
 collection = db['TeleAuth']
 
-# User login
+# Check if user is authenticated
 def is_auth(uname):
     query = {"_id": uname}
     result = collection.find_one(query)
     return result
 
+# User login function
 def login(uname, api_key):
     d_check = is_auth(uname)
     if d_check is None:
@@ -33,6 +36,7 @@ def login(uname, api_key):
     else:
         return False
 
+# User logout function
 def logout(uname):
     query = {'_id': uname}
     result = collection.find_one(query)
@@ -42,7 +46,7 @@ def logout(uname):
     else:
         return False
 
-# Link generator
+# Generate a shortened link
 def link_gen(uname, long_link):
     if is_auth(uname) is not None:
         query = {"_id": uname}
@@ -58,6 +62,7 @@ def link_gen(uname, long_link):
     else:
         return "You haven't logged in yet. Please login first."
 
+# Check user's balance
 def check_balance(uname):
     if is_auth(uname) is not None:
         query = {"_id": uname}
@@ -76,6 +81,7 @@ def check_balance(uname):
     else:
         return "You haven't logged in yet. Please login first."
 
+# Start command handler
 def start(update, context):
     keyboard = [
         [InlineKeyboardButton("Sign Up", url="https://ez4short.xyz/auth/signup")],
@@ -83,6 +89,7 @@ def start(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text("Welcome to the bot! Please sign up first.", reply_markup=reply_markup)
 
+# Login command handler
 def api_Login(update, context):
     user = update.message.from_user
     api_key = context.args[0]
@@ -93,23 +100,24 @@ def api_Login(update, context):
     else:
         update.message.reply_text("You are already logged in.")
 
+# Logout command handler
 def api_Logout(update, context):
     user = update.message.from_user
     username = user.username
     resp = logout(username)
     if resp:
         update.message.reply_text("You are logged out successfully.")
-    elif not resp:
-        update.message.reply_text("You haven't logged in yet. Please login first.")
     else:
-        update.message.reply_text("Something went wrong.")
+        update.message.reply_text("You haven't logged in yet. Please login first.")
 
+# Check balance command handler
 def api_CheckBalance(update, context):
     user = update.message.from_user
     username = user.username
     balance = check_balance(username)
     update.message.reply_text(f"Your balance is: {balance}")
 
+# Get API token instructions handler
 def get_api(update, context):
     keyboard = [
         [InlineKeyboardButton("Get Token", url="https://ez4short.xyz/member/tools/api")],
@@ -117,10 +125,11 @@ def get_api(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     message_reply_text = """• First visit ez4short.xyz/member/tools/api
 • Copy the API TOKEN and come back to the bot.
-• Input /token and paste the token copied from ez4short.xyz/member/tools/api
+• Input /login <API_KEY> to log in.
 • Now the bot will be successfully connected to your ez4short.xyz account."""
     update.message.reply_text(message_reply_text, reply_markup=reply_markup)
 
+# Handle generic messages
 def handle_message(update, context):
     message = update.message.text
     user = update.message.from_user
@@ -131,17 +140,29 @@ def handle_message(update, context):
     else:
         update.message.reply_text("Please login first using /login <API_KEY>.")
 
+# Features command handler
+def feature(update, context):
+    features_text = """
+    Available Features:
+    1. /login <API_KEY> - Log in with your API key.
+    2. /logout - Log out from the bot.
+    3. /balance - Check your current balance.
+    4. /get_api - Get the link to retrieve your API token.
+    5. Send a URL to shorten it.
+    """
+    update.message.reply_text(features_text)
+
+# Main function to run the bot
 def main():
     bot = telegram.Bot("7163612647:AAFpZ3iSUfv8TZFpKd50-N5RRgN-2z7DWmM")
     updater = telegram.ext.Updater(bot.token, use_context=True)
     disp = updater.dispatcher
     disp.add_handler(telegram.ext.CommandHandler('start', start))
-    disp.add_handler(telegram.ext.CommandHandler('help', help))
     disp.add_handler(telegram.ext.CommandHandler('login', api_Login))
-    disp.add_handler(telegram.ext.CommandHandler('get_api', get_api))
     disp.add_handler(telegram.ext.CommandHandler('logout', api_Logout))
-    disp.add_handler(telegram.ext.CommandHandler('features', feature))
-    disp.add_handler(telegram.ext.CommandHandler('balance', api_CheckBalance))  # New handler for balance check
+    disp.add_handler(telegram.ext.CommandHandler('balance', api_CheckBalance))
+    disp.add_handler(telegram.ext.CommandHandler('get_api', get_api))
+    disp.add_handler(telegram.ext.CommandHandler('feature', feature))
     disp.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.all, handle_message))
     updater.start_polling()
 
