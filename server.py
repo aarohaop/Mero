@@ -171,7 +171,7 @@ def feature(update, context):
 
 # Main function to run the bot
 def main():
-    bot = telegram.Bot("YOUR_BOT_TOKEN")
+    bot = telegram.Bot("7163612647:AAFpZ3iSUfv8TZFpKd50-N5RRgN-2z7DWmM")
     updater = telegram.ext.Updater(bot.token, use_context=True)
     disp = updater.dispatcher
     disp.add_handler(telegram.ext.CommandHandler('start', start))
