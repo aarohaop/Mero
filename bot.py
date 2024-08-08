@@ -3,9 +3,9 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 import requests
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
-BOT_TOKEN = 'YOUR_BOT_TOKEN'
-API_URL = 'https://example.com/api/balance'  # Replace with your balance API URL
-API_KEY = 'YOUR_API_KEY'  # Replace with your API key
+BOT_TOKEN = '6548971110:AAGW5_X3noXCCZQWuXm-FtfDvPfS-tTKe7c'
+API_URL = 'https://ez4short.xyz/member/tools/api'  # Replace with your balance API URL
+API_KEY = '12b2d8281afa6d870f9b44bd0cba166704c7ea50'  # Replace with your API key
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Hi! Use /balance to check your balance.')
